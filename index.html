@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas + Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Productivity Timer</h1>
+        <p>Controla tu tiempo, domina tus tareas</p>
+    </header>
+
+    <main class="contenedor">
+        <section class="seccion-timer">
+            <div class="tarjeta-timer">
+                <h2>Tarea Activa</h2>
+                <div id="reloj">00:00:00</div>
+                <div class="botones-control">
+                    <button id="btn-iniciar" class="btn">Iniciar</button>
+                    <button id="btn-pausar" class="btn" disabled>Pausar</button>
+                    <button id="btn-terminar" class="btn" disabled>Terminar</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="seccion-tareas">
+            <div class="formulario-tarea">
+                <h3>Nueva Actividad</h3>
+                <input type="text" id="nombre-tarea" placeholder="Ej: Diseño de interfaz o Álgebra..." required>
+                <button id="btn-agregar" class="btn-primario">Agregar Tarea</button>
+            </div>
+
+            <div class="lista-tareas-contenedor">
+                <h3>Mis Tareas</h3>
+                <ul id="lista-tareas">
+                    </ul>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
