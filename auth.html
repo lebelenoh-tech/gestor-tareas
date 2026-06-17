@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Timer - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-contenedor { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #7f8c8d; margin-bottom: 20px; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+        .cambiar-modo { margin-top: 15px; font-size: 0.85rem; color: #7f8c8d; }
+        .cambiar-modo span { color: #3498db; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="login-contenedor">
+        <h2 id="auth-titulo">Iniciar Sesión</h2>
+        <p id="auth-subtitulo">Ingresa tus credenciales para acceder a tus tareas</p>
+
+        <form id="auth-form" onsubmit="procesarAuth(event)">
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit" id="btn-auth">Ingresar</button>
+        </form>
+
+        <div class="cambiar-modo">
+            <p id="texto-alterno">¿No tienes cuenta? <span onclick="cambiarModo()">Regístrate aquí</span></p>
+        </div>
+    </div>
+
+    <script>
+        let esLogin = true;
+
+        function cambiarModo() {
+            esLogin = !esLogin;
+            const titulo = document.getElementById('auth-titulo');
+            const subtitulo = document.getElementById('auth-subtitulo');
+            const btn = document.getElementById('btn-auth');
+            const textoAlterno = document.getElementById('texto-alterno');
+
+            if (esLogin) {
+                titulo.textContent = "Iniciar Sesión";
+                subtitulo.textContent = "Ingresa tus credenciales para acceder a tus tareas";
+                btn.textContent = "Ingresar";
+                textoAlterno.innerHTML = `¿No tienes cuenta? <span onclick="cambiarModo()">Regístrate aquí</span>`;
+            } else {
+                titulo.textContent = "Crear Cuenta";
+                subtitulo.textContent = "Regístrate de forma gratuita para no perder tus datos";
+                btn.textContent = "Registrarse";
+                textoAlterno.innerHTML = `¿Ya tienes cuenta? <span onclick="cambiarModo()">Inicia sesión aquí</span>`;
+            }
+        }
+
+        function procesarAuth(e) {
+            e.preventDefault();
+            // Por ahora simulamos el acceso directo mientras conectamos la base de datos
+            alert(esLogin ? "¡Sesión iniciada con éxito!" : "¡Cuenta creada con éxito!");
+            window.location.href = "index.html"; 
+        }
+    </script>
+</body>
+</html>
+id #ddd; border-radius: 6px; font-size: 1rem; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+</html>cript>indow.location.href = "index.html";  éxito!" : "¡Cuenta creada con
+>
+cat << 'EOF' > auth.html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Timer - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-contenedor { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #7f8c8d; margin-bottom: 20px; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+        .cambiar-modo { margin-top: 15px; font-size: 0.85rem; color: #7f8c8d; }
+        .cambiar-modo span { color: #3498db; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="login-contenedor">
+        <h2 id="auth-titulo">Iniciar Sesión</h2>
+        <p id="auth-subtitulo">Ingresa tus credenciales para acceder a tus tareas</p>
+
+        <form id="auth-form">
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit" id="btn-auth">Ingresar</button>
+        </form>
+
+        <div class="cambiar-modo">
+            <p id="texto-alterno">¿No tienes cuenta? <span id="btn-cambiar-modo">Regístrate aquí</span></p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

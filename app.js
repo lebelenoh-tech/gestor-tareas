@@ -1,10 +1,10 @@
-// 1. ESTADO DE LA APLICACIÓN
+// ESTADO LOCAL DE LA APLICACIÓN
 let tareas = [];
-let tareaActiva = null;
 let idIntervalo = null;
 let segundosTranscurridos = 0;
+let idTareaActiva = null;
 
-// 2. ELEMENTOS DEL DOM
+// ELEMENTOS DEL DOM
 const inputTarea = document.getElementById('nombre-tarea');
 const btnAgregar = document.getElementById('btn-agregar');
 const listaTareas = document.getElementById('lista-tareas');
@@ -14,126 +14,126 @@ const btnIniciar = document.getElementById('btn-iniciar');
 const btnPausar = document.getElementById('btn-pausar');
 const btnTerminar = document.getElementById('btn-terminar');
 
-// 3. FUNCIONES DEL TEMPORIZADOR
-function formatearTiempo(segundosTotales) {
-    const hrs = Math.floor(segundosTotales / 3600);
-    const mins = Math.floor((segundosTotales % 3600) / 60);
-    const segs = segundosTotales % 60;
-    
-    const pad = (num) => String(num).padStart(2, '0');
-    return `${pad(hrs)}:${pad(mins)}:${pad(segs)}`;
-}
+// COMPROBACIÓN DE BOTONES
+console.log("Elementos cargados:", { inputTarea, btnAgregar, listaTareas });
 
-function actualizarRelojEnPantalla() {
-    reloj.textContent = formatearTiempo(segundosTranscurridos);
-}
-
-function iniciarTimer() {
-    if (!tareaActiva) {
-        alert("Por favor, selecciona o agrega una tarea primero haciendo clic en ella.");
-        return;
-    }
-    
-    btnIniciar.disabled = true;
-    btnPausar.disabled = false;
-    btnTerminar.disabled = false;
-
-    idIntervalo = setInterval(() => {
-        segundosTranscurridos++;
-        actualizarRelojEnPantalla();
-    }, 1000);
-}
-
-function pausarTimer() {
-    clearInterval(idIntervalo);
-    btnIniciar.disabled = false;
-    btnPausar.disabled = true;
-}
-
-function terminarTimer() {
-    clearInterval(idIntervalo);
-    
-    // Guardar el tiempo acumulado en la tarea activa
-    if (tareaActiva) {
-        tareaActiva.tiempoTotal += segundosTranscurridos;
-        tareaActiva.estado = 'pendiente'; // Libera el estado de proceso
-    }
-
-    // Reiniciar variables del reloj
-    segundosTranscurridos = 0;
-    tareaActiva = null;
-    actualizarRelojEnPantalla();
-    renderizarTareas();
-
-    // Bloquear botones de control hasta elegir otra tarea
-    btnIniciar.disabled = false;
-    btnPausar.disabled = true;
-    btnTerminar.disabled = true;
-    
-    document.querySelectorAll('.item-tarea').forEach(el => el.classList.remove('activa'));
-}
-
-// 4. GESTIÓN DE TAREAS
-function agregarTarea() {
-    const nombre = inputTarea.value.trim();
-    if (nombre === "") return;
-
-    const nuevaTarea = {
-        id: Date.now(),
-        nombre: nombre,
-        tiempoTotal: 0,
-        estado: 'pendiente'
-    };
-
-    tareas.push(nuevaTarea);
-    inputTarea.value = ""; // Limpiar input
-    renderizarTareas();
-}
-
-function seleccionarTarea(id, elementoDOM) {
-    // Si el reloj está corriendo, no dejamos cambiar de tarea bruscamente
-    if (idIntervalo && btnIniciar.disabled) {
-        alert("Pausa o termina la tarea actual antes de cambiar.");
-        return;
-    }
-
-    // Buscar la tarea seleccionada
-    tareaActiva = tareas.find(t => t.id === id);
-    
-    // Cambiar estilos visuales en la lista
-    document.querySelectorAll('.item-tarea').forEach(el => el.classList.remove('activa'));
-    elementoDOM.classList.add('activa');
-    
-    // Resetear el segundero local para esta nueva sesión de enfoque
-    segundosTranscurridos = 0;
-    actualizarRelojEnPantalla();
-}
-
+// REFRESCAR LA LISTA EN PANTALLA
 function renderizarTareas() {
     listaTareas.innerHTML = "";
     
+    if (tareas.length === 0) {
+        listaTareas.innerHTML = `<li style="color: #7f8c8d; list-style: none; padding: 10px 0;">No hay tareas agregadas.</li>`;
+        return;
+    }
+
     tareas.forEach(tarea => {
         const li = document.createElement('li');
-        li.className = `item-tarea ${tareaActiva && tareaActiva.id === tarea.id ? 'activa' : ''}`;
+        li.className = `item-tarea ${idTareaActiva === tarea.id ? 'activa' : ''}`;
+        li.style.cursor = "pointer";
         
         li.innerHTML = `
             <span>${tarea.nombre}</span>
             <span class="tiempo">${formatearTiempo(tarea.tiempoTotal)}</span>
         `;
         
-        // Evento para seleccionar la tarea al hacer clic
-        li.addEventListener('click', () => seleccionarTarea(tarea.id, li));
-        
+        li.onclick = () => seleccionarTarea(tarea.id);
         listaTareas.appendChild(li);
     });
 }
 
-// 5. EVENT LISTENERS
-btnAgregar.addEventListener('click', agregarTarea);
-inputTarea.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') agregarTarea();
-});
+// AGREGAR UNA NUEVA TAREA
+function agregarTarea() {
+    const nombre = inputTarea.value.trim();
+    if (nombre === "") {
+        alert("Por favor, escribe el nombre de una tarea.");
+        return;
+    }
 
-btnIniciar.addEventListener('click', iniciarTimer);
-btnPausar.addEventListener('click', pausarTimer);
-btnTerminar.addEventListener('click', terminarTimer);
+    const nuevaTarea = {
+        id: Date.now(),
+        nombre: nombre,
+        tiempoTotal: 0
+    };
+
+    tareas.push(nuevaTarea);
+    inputTarea.value = ""; 
+    renderizarTareas();
+    console.log("Tarea agregada con éxito:", nuevaTarea);
+}
+
+// SELECCIONAR TAREA
+function seleccionarTarea(id) {
+    if (idIntervalo) {
+        alert("Pausa el temporizador antes de cambiar de tarea.");
+        return;
+    }
+    idTareaActiva = id;
+    segundosTranscurridos = 0;
+    reloj.textContent = "00:00:00";
+    renderizarTareas();
+}
+
+// MANEJO DEL TIEMPO
+function formatearTiempo(segundosTotales) {
+    const hrs = Math.floor(segundosTotales / 3600);
+    const mins = Math.floor((segundosTotales % 3600) / 60);
+    const segs = segundosTotales % 60;
+    const pad = (num) => String(num).padStart(2, '0');
+    return `${pad(hrs)}:${pad(mins)}:${pad(segs)}`;
+}
+
+function iniciarTimer() {
+    if (!idTareaActiva) {
+        alert("Haz clic en una tarea de la lista para activarla antes de iniciar.");
+        return;
+    }
+    btnIniciar.disabled = true;
+    btnPausar.disabled = false;
+    btnTerminar.disabled = false;
+
+    idIntervalo = setInterval(() => {
+        segundosTranscurridos++;
+        reloj.textContent = formatearTiempo(segundosTranscurridos);
+    }, 1000);
+}
+
+function pausarTimer() {
+    clearInterval(idIntervalo);
+    idIntervalo = null;
+    btnIniciar.disabled = false;
+    btnPausar.disabled = true;
+}
+
+function terminarTimer() {
+    if (!idIntervalo && segundosTranscurridos === 0) return;
+    
+    clearInterval(idIntervalo);
+    idIntervalo = null;
+
+    const tarea = tareas.find(t => t.id === idTareaActiva);
+    if (tarea) {
+        tarea.tiempoTotal += segundosTranscurridos;
+    }
+
+    segundosTranscurridos = 0;
+    reloj.textContent = "00:00:00";
+    
+    btnIniciar.disabled = false;
+    btnPausar.disabled = true;
+    btnTerminar.disabled = true;
+    
+    renderizarTareas();
+}
+
+// ASIGNAR EVENTOS
+btnAgregar.onclick = agregarTarea;
+inputTarea.onkeypress = (e) => {
+    if (e.key === 'Enter') agregarTarea();
+};
+
+btnIniciar.onclick = iniciarTimer;
+btnPausar.onclick = pausarTimer;
+btnTerminar.onclick = terminarTimer;
+
+// INICIALIZACIÓN
+renderizarTareas();
