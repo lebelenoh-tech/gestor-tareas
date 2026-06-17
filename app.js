@@ -1,87 +1,111 @@
-// 1. ARREGLO PARA ALMACENAR LAS TAREAS EN MEMORIA LOCAL
-let tareas = [];
+// 1. IMPORTAR COMPONENTES DE FIREBASE
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 2. CAPTURAR ELEMENTOS DEL HTML
+// Tu configuración oficial de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBCxchafesCKf2dzb2LQAmooa4yU8w0S-0",
+    authDomain: "productividad-timer-db.firebaseapp.com",
+    projectId: "productividad-timer-db",
+    storageBucket: "productividad-timer-db.firebasestorage.app",
+    messagingSenderId: "660058647839",
+    appId: "1:660058647839:web:2d0d333cd77481915dd42a",
+    measurementId: "G-ZE9PC1J0KG"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 2. ESTADO LOCAL Y DOM
+let tareas = [];
+let usuarioActual = null;
+
 const inputTarea = document.getElementById('nombre-tarea');
 const btnAgregar = document.getElementById('btn-agregar');
 const listaTareas = document.getElementById('lista-tareas');
 
-// 3. FUNCIÓN PARA DIBUJAR LAS TAREAS EN LA PÁGINA
+// 3. CONTROLADOR DE SESIÓN COMPLETO
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        usuarioActual = user;
+        console.log("Sesión activa de:", user.email);
+        cargarTareasDesdeNube();
+    } else {
+        // SI NO ESTÁ LOGUEADO: Lo mandamos de inmediato a registrarse o loguearse
+        console.log("No hay sesión detectada. Redirigiendo a auth.html...");
+        window.location.href = "auth.html";
+    }
+});
+
+// 4. RENDERIZAR TAREAS EN PANTALLA
 function renderizarTareas() {
-    listaTareas.innerHTML = ""; // Limpiar la lista visual antes de redibujar
-    
-
-cat << 'EOF' > app.js
-// 1. ARREGLO PARA ALMACENAR LAS TAREAS EN MEMORIA LOCAL
-let tareas = [];
-
-// 2. CAPTURAR ELEMENTOS DEL HTML
-const inputTarea = document.getElementById('nombre-tarea');
-const btnAgregar = document.getElementById('btn-agregar');
-const listaTareas = document.getElementById('lista-tareas');
-
-// 3. FUNCIÓN PARA DIBUJAR LAS TAREAS EN LA PÁGINA
-function renderizarTareas() {
-    listaTareas.innerHTML = ""; // Limpiar la lista visual antes de redibujar
-    
+    listaTareas.innerHTML = "";
     if (tareas.length === 0) {
         listaTareas.innerHTML = "<li style='color: #7f8c8d; padding: 10px; list-style: none;'>No hay tareas todavía.</li>";
         return;
     }
-
-    // Recorrer el arreglo y crear los elementos de la lista
-    tareas.forEach((tarea) => {
+    tareas.forEach(tarea => {
         const li = document.createElement('li');
         li.className = "item-tarea";
-        li.style.display = "flex";
-        li.style.justify = "space-between";
         li.style.padding = "12px";
         li.style.background = "#f8f9fa";
         li.style.marginBottom = "8px";
         li.style.borderRadius = "6px";
-        li.style.borderLeft = "5px solid #3498db";
-        
-        li.innerHTML = `
-            <span style='font-weight: 500; color: #2c3e50;'>${tarea.nombre}</span>
-            <span class="tiempo" style='color: #7f8c8d;'>00:00:00</span>
-        `;
+        li.style.display = "flex";
+        li.style.justify = "space-between";
+        li.innerHTML = `<span>${tarea.nombre}</span> <span class="tiempo">00:00:00</span>`;
         listaTareas.appendChild(li);
     });
 }
 
-// 4. FUNCIÓN PARA AGREGAR LA TAREA AL ARREGLO
-function agregarTarea() {
-    const texto = inputTarea.value.trim();
-    
-    // Validar que el campo no esté vacío
-    if (texto === "") {
-        alert("Por favor, escribe un nombre para la tarea.");
-        return;
+// 5. CARGAR SOLO LAS TAREAS DEL USUARIO CONECTADO
+async function cargarTareasDesdeNube() {
+    if (!usuarioActual) return;
+    try {
+        const q = query(collection(db, "tareas"), where("usuarioId", "==", usuarioActual.uid));
+        const querySnapshot = await getDocs(q);
+        tareas = [];
+        querySnapshot.forEach((doc) => {
+            tareas.push(doc.data());
+        });
+        renderizarTareas();
+    } catch (e) {
+        console.error("Error cargando datos de Firestore: ", e);
     }
-
-    // Crear el objeto de la nueva tarea
-    const nuevaTarea = {
-        id: Date.now(),
-        nombre: texto
-    };
-
-    // Empujar la tarea al arreglo local
-    tareas.push(nuevaTarea);
-    
-    // Limpiar la caja de texto y actualizar la interfaz
-    inputTarea.value = "";
-    renderizarTareas();
 }
 
-// 5. ASIGNACIÓN DE EVENTOS TRADICIONALES
-btnAgregar.onclick = agregarTarea;
+// 6. GUARDAR NUEVA TAREA ASOCIADA AL USUARIO
+async function agregarTarea() {
+    const texto = inputTarea.value.trim();
+    if (texto === "" || !usuarioActual) return;
 
-// Permitir agregar la tarea también al presionar la tecla Enter
-inputTarea.onkeypress = function(e) {
-    if (e.key === 'Enter') {
-        agregarTarea();
+    btnAgregar.disabled = true;
+    btnAgregar.textContent = "Guardando...";
+
+    const nuevaTarea = {
+        nombre: texto,
+        tiempoTotal: 0,
+        fecha: Date.now(),
+        usuarioId: usuarioActual.uid // Vincula la tarea a tu cuenta única
+    };
+
+    try {
+        await addDoc(collection(db, "tareas"), nuevaTarea);
+        inputTarea.value = "";
+        await cargarTareasDesdeNube();
+    } catch (error) {
+        console.error("Error al guardar en la nube:", error);
+        alert("Hubo un problema de permisos con Firebase.");
+    } finally {
+        btnAgregar.disabled = false;
+        btnAgregar.textContent = "Agregar Tarea";
     }
-};
+}
 
-// Carga inicial al abrir la página por primera vez
-renderizarTareas();
+// EVENTOS
+btnAgregar.onclick = agregarTarea;
+inputTarea.onkeypress = (e) => {
+    if (e.key === 'Enter') agregarTarea();
+};
